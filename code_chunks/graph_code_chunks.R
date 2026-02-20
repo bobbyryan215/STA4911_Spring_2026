@@ -19,7 +19,7 @@ as.matrix(x1)
 #TDA rispDiag same results as above
 #FIXME: the maxscale parameter may be improperty defined
 x2 <- ripsDiag(dist_matrix, maxdimension = 1 ,maxscale = 1.1*max(dist_matrix),dist = "arbitrary", library = "GUDHI") |> as_persistence()
-as.matrix(x2)
+as.matrix(x2) |> as_persistence()
 
 
 #check x1 and x2
