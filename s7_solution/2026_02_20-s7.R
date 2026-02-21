@@ -31,6 +31,21 @@ library_type <- new_property(
   default = ""
 )
 
+#TODO: decide if we want to use a global maxdim argument
+#FIXME: should we change the default value?
+# max_dimension <- new_property(
+#   class = class_numeric,
+#   validator = function(value) {
+#     if (length(value) != 1) 
+#       return("must be a single value")
+#     if (is.na(value))
+#       return("cannot be NA")
+#     if (value %% 1 !=0 || value < 0)
+#       return("must be an integer greater or equal to 0")
+#   },
+#   default = 1
+# )
+
 
 PH_graph <-  new_class("PH_graph",
                        properties = list(
@@ -48,16 +63,13 @@ PH_graph <-  new_class("PH_graph",
                          else if (self@engine == "ripserr" & self@library != "" ){
                            sprintf("Library is only defined when engine is TDA. Please leave library blank when using the ripserr engine.")
                          }
+                         # FIXME: check if additional filtration check is needed
                          else if (self@engine == "ripserr" & (self@filtration == "alpha_complex" || self@filtration=="alpha_shape")  ){
                            sprintf("Alpha complexes are only defined for the engine TDA. Please use library TDA for any alpha filtration")
                          }
                          #FIXME: change this to allow more types of objects
                          else if ( !is_igraph(self@data) ){
                            sprintf("Objects must be inputted as igraph objects.")
-                         }
-                         
-                         else if (self@engine == "ripserr" & self@library != "" ){
-                           sprintf("Library is only defined when engine is TDA. Please leave library blank when using the ripserr engine.")
                          }
                        }
 )
@@ -143,8 +155,8 @@ PH  <- function(data, math_object, filtration, engine, library = "", ...){
       
       #call function that will make vietoris_rips
       #FIXME: figure out a way to convert this to PHUTIL object
-      do.call(ripsDiag, c(list(X = dist_w, dist = "arbitrary"), PH_storage@params)) 
-      
+      do.call(ripsDiag, 
+        c(list(X = dist_w, dist = "arbitrary"), PH_storage@params)) 
     }
   }
 }
@@ -152,6 +164,7 @@ PH  <- function(data, math_object, filtration, engine, library = "", ...){
 #this works
 PH(make_ring(10), "graph","vietoris_rips","ripserr", max_dim = 1)
 
-#this works but it wont let you convert it to a phutil object for some bizzare reasone
+#this works but it wont let you convert it to a phutil object for some bizarre reason
 PH(make_ring(10), "graph","vietoris_rips","TDA", "GUDHI", dist = "arbitrary")
 PH(make_ring(10), "graph","vietoris_rips","TDA", "GUDHI", dist = "arbitrary") |> as_persistence()
+
