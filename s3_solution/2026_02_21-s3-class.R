@@ -3,8 +3,9 @@ library(ripserr)
 
 # first create the class object
 # need to add some way to store extra parameters for functions calls
+# need to add better way of verifying integers instead of having to put L after the number
 PH_ts_constructor <- function(data, data_dim, dim_lag, sample_lag, filtration = "vietoris_rips", 
-                  engine = "ripserr", library = "", params) {
+                              engine = "ripserr", library = "", params) {
   if (!is.ts(data)) {
     stop("data must be a time series object")
   }
@@ -26,8 +27,8 @@ PH_ts_constructor <- function(data, data_dim, dim_lag, sample_lag, filtration = 
   }
   
   object <- list(data = data, data_dim = data_dim, dim_lag = dim_lag,
-                       sample_lag = sample_lag, filtration = filtration,
-                       engine = engine, library = library)
+                 sample_lag = sample_lag, filtration = filtration,
+                 engine = engine, library = library)
   class(object) <- "PH_ts"
   return(object)
 }
@@ -43,3 +44,14 @@ ts_to_point_cloud <- function(ts, data_dim, dim_lag, sample_lag) {
   }
   return(mat)
 }
+
+print.PH_ts <- function(obj) {
+  cat("Persistent Homology for Time Series\n")
+  cat("-----------------------------------\n")
+  cat("Filtration used: ", obj$filtration, "\n")
+  cat("Engine used: ", obj$engine, "\n")
+  lib <- ifelse(obj$library == "", "none", obj$library)
+  cat("Library used: ", lib, "\n")
+}
+
+
