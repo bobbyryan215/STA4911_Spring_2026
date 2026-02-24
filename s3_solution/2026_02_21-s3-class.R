@@ -3,7 +3,7 @@ library(ripserr)
 
 # first create the class object
 # need to add some way to store extra parameters for functions calls
-PH_ts_object <- function(data, data_dim, dim_lag, sample_lag, filtration = "vietoris_rips", 
+PH_ts_constructor <- function(data, data_dim, dim_lag, sample_lag, filtration = "vietoris_rips", 
                   engine = "ripserr", library = "", params) {
   if (!is.ts(data)) {
     stop("data must be a time series object")
