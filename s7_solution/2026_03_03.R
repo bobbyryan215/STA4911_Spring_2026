@@ -33,7 +33,7 @@ library_type <- new_property(
   class = class_character,
   validator = function(value) {
     if (  !(value %in% c("GUDHI", "PHAT", "Dionysus", NA_character_)) )
-      "must be GUDHI, PHAT, or Dionysus"
+      "must be GUDHI, PHAT, Dionysus, or NA"
   },
   default = NA_character_
 )
@@ -42,7 +42,7 @@ library_type <- new_property(
 maxdimension_type <- new_property(
   class = class_double,
   validator = function(value) {
-    if (!is.na(value) & value <= 0)
+    if (!is.na(value) & value < 0)
       "must be a non-negative integer"
   },
   default = NA_real_
