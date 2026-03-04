@@ -5,31 +5,31 @@ library(igraph)
 
 
 compute_persistence <- function(data, s7_obj) {
-  UseMethod("compute_persistence")
+  UseMethod("compute_persistence", data)
 }
 
 compute_persistence.matrix <- function(data, s7_obj) {
   if (s7_obj@math_object == "raster") {
     if (s7_obj@engine == "ripserr") {
-      cubical(s7_obj@data) |> as_persistence()
+      cubical(data) |> as_persistence()
     }
     if (s7_obj@engine == "TDA") {
-      gridDiag(FUNvalues = s7_obj@data, library = s7_obj@library) |> as_persistence()
+      gridDiag(FUNvalues = data, library = s7_obj@library) |> as_persistence()
     }
   }
   if (s7_obj@math_object == "point cloud") {
     if (s7_obj@engine == "ripserr") {
-      vietoris_rips(s7_obj@data) |> as_persistence()
+      vietoris_rips(data) |> as_persistence()
     }
     if (s7_obj@engine == "TDA") {
       if (s7_obj@filtration == "vietoris_rips") {
-        ripsDiag(s7_obj@data, library = s7_obj@library) |> as_persistence()
+        ripsDiag(data, library = s7_obj@library) |> as_persistence()
       }
       if (s7_obj@filtration == "alpha_complex") {
-        alphaComplexDiag(s7_obj@data, library = s7_obj@library)
+        alphaComplexDiag(data, library = s7_obj@library) |> as_persistence()
       }
       if (s7_obj@filtration == "alpha_shape") {
-        alphaShapeDiag(s7_obj@data, library = s7_obj@library)
+        alphaShapeDiag(data, library = s7_obj@library) |> as_persistence() 
       }
     }
   }
@@ -37,24 +37,31 @@ compute_persistence.matrix <- function(data, s7_obj) {
 
 compute_persistence.ts <- function(data, s7_obj) {
   pc <- ts_to_point_cloud(data, s7_obj@data_dim, s7_obj@dim_lag, s7_obj@sample_lag)
-  compute_persistence(pc, s7_obj)
+  if (s7_obj@engine == "ripserr") {
+    vietoris_rips(data) |> as_persistence()
+  }
+  if (s7_obj@engine == "TDA") {
+    if (s7_obj@filtration == "vietoris_rips") {
+      ripsDiag(data, library = s7_obj@library) |> as_persistence()
+    }
+  }
 }
 
 compute_persistence.dist <- function(data, s7_obj) {
   if (s7_obj@engine == "ripserr") {
-    vietoris_rips(s7_obj@data) |> as_persistence()
+    vietoris_rips(data) |> as_persistence()
   }
   if (s7_obj@engine == "TDA") {
-    ripsDiag(s7_obj@data, library = s7_obj@library) |> as_persistence()
+    ripsDiag(data, library = s7_obj@library) |> as_persistence()
   }
 }
 
 compute_persistence.igraph <- function(data, s7_obj) {
   if (s7_obj@engine == "ripserr") {
-    vietoris_rips(s7_obj@data) |> as_persistence()
+    vietoris_rips(data) |> as_persistence()
   }
   if (s7_obj@engine == "TDA") {
-    ripsDiag(s7_obj@data, library = s7_obj@library) |> as_persistence()
+    ripsDiag(data, library = s7_obj@library) |> as_persistence()
   }
 }
 

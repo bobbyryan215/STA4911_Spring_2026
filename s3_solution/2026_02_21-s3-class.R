@@ -12,8 +12,8 @@ PH_ts_constructor <- function(data, data_dim, dim_lag, sample_lag, filtration = 
   if (!(is.integer(data_dim) && is.integer(dim_lag) && is.integer(sample_lag))) {
     stop("data_dim, dim_lag, and sample_lag paramaters must all be integers")
   }
-  if (!(filtration %in% c("vietoris_rips","ripsDiag"))) {
-    print("filtration must be either 'vietoris_rips' or 'ripsDiag' for a time series object")
+  if (!(filtration %in% c("vietoris_rips"))) {
+    print("filtration must be either 'vietoris_rips' for a time series object")
     return(0)
   }
   if (!(engine %in% c("TDA","ripserr"))) {
