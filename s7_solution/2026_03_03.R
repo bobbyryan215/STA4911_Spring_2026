@@ -19,6 +19,7 @@ engine_type <- new_property(
 )
 
 #TODO: see if not having cubical is correct
+#TODO: see how to handle other objects
 filtration_type <- new_property(
   class = class_character,
   validator = function(value) {
@@ -70,6 +71,15 @@ params_type <- new_property(
   default = list()
 )
 
+#TODO: decide if we should have one for all objects or one for each
+params_raster_type <- new_property(
+  class = class_list,
+  validator = function(value) {
+    if ( !all(names(value) %in% c("sublevel","threshold","method","location", "lim", "by", "printProgress")) )
+      "only acceptable parameters are sublevel, threshold, method, location, lim, by, and printProgress"
+  },
+  default = list()
+)
 
 
 PH_pointcloud <-  new_class("PH_pointcloud", parent = PH,
@@ -94,6 +104,37 @@ PH_pointcloud <-  new_class("PH_pointcloud", parent = PH,
                        }
 )
 
+#TODO: see how to hande sublevel = false in ripserr
+#TODO: validate params value types?
+PH_raster <- new_class("PH_raster", parent = PH,
+                       properties = list(
+                         engine = engine_type,
+                         library = library_type,
+                         maxdimension = maxdimension_type,
+                         params = params_raster_type),
+                       validator = function(self) {
+                         if (self@engine == "ripserr" & !is.na(self@library)) {
+                           sprintf("Library is only defined when engine is TDA. Please leave library blank when using the ripserr engine.")
+                         }
+                         if (self@engine == "TDA" && ("threshold" %in% names(self@params))) {
+                           sprintf("threshold is only used when engine is ripserr. Please remove threshold from params or set engine = ripserr.")
+                         }
+                         if (self@engine == "TDA" && ("method" %in% names(self@params))) {
+                           sprintf("method is only used when engine is ripserr. Please remove method from params or set engine = ripserr.")
+                         }
+                         if (self@engine == "ripserr" && ("location" %in% names(self@params))) {
+                           sprintf("location is only used when engine is TDA. Please remove location from params or set engine = TDA.")
+                         }
+                         if (self@engine == "ripserr" && ("printProgress" %in% names(self@params))) {
+                           sprintf("printProgress is only used when engine is TDA. Please remove printProgress from params or set engine = TDA.")
+                         }
+                         if (!is.null(self@params$location) && self@params$location == TRUE && !(all(c("lim","by") %in% names(self@params)))) {
+                           sprintf("When location = TRUE, both lim and by must be provided in params.")
+                         }
+                       }
+)
+
 
 
 PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, params = list( printProgress = TRUE))
+PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
