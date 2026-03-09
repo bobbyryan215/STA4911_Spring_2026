@@ -20,8 +20,8 @@ engine_type <- new_property(
 filtration_type <- new_property(
   class = class_character,
   validator = function(value) {
-    if (  !(value %in% c("vietoris_rips", "alpha_shape" ,"alpha_complex")) )
-      "must be vietoris_rips, alpha_shape, or alpha_complex"
+    if (  !(value %in% c("vietoris_rips", "alpha_shape" ,"alpha_complex", "cubical")) )
+      "must be vietoris_rips, cubical, alpha_shape, or alpha_complex"
   },
   default = "vietoris_rips"
 )
