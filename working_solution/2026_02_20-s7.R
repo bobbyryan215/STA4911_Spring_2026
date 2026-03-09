@@ -1,3 +1,9 @@
+library(S7)
+library(TDA)
+library(ripserr)
+library(igraph)
+library(phutil)
+
 #the following definitions of types are global in that are not filtration specific. 
 data_type = new_property(
   class_any,
@@ -164,7 +170,7 @@ PH  <- function(data, math_object, filtration, engine, library = "", ...){
 #this works
 PH(make_ring(10), "graph","vietoris_rips","ripserr", max_dim = 1)
 
-#this works but it wont let you convert it to a phutil object for some bizarre reason
+#FIXME: this works but it wont let you convert it to a phutil object for some bizarre reason
 PH(make_ring(10), "graph","vietoris_rips","TDA", "GUDHI", dist = "arbitrary")
 PH(make_ring(10), "graph","vietoris_rips","TDA", "GUDHI", dist = "arbitrary") |> as_persistence()
 
