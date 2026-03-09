@@ -4,9 +4,6 @@ library(ripserr)
 library(phutil)
 
 
-#FIXME: Do we want a larger parent class. It may be useful to that all subclasses are related. This can easily be removed
-PH <- new_class("PH")
-
 
 #the following definitions of types are global in that are not filtration specific. 
 engine_type <- new_property(
@@ -43,7 +40,7 @@ library_type <- new_property(
 maxdimension_type <- new_property(
   class = class_double,
   validator = function(value) {
-    if (!is.na(value) & value < 0)
+    if (!is.na(value) && value < 0)
       "must be a non-negative integer"
   },
   default = NA_real_
@@ -52,7 +49,7 @@ maxdimension_type <- new_property(
 maxscale_type <- new_property(
   class = class_double,
   validator = function(value) {
-    if (  (!is.na(value) & value <= 0 ))
+    if (  (!is.na(value) && value <= 0 ))
       "must be a positive real number"
   },
   default = NA_real_
@@ -79,22 +76,30 @@ params_raster_type <- new_property(
 )
 
 
+PH <- new_class("PH",
+  properties = list(
+    engine = engine_type,
+    library = library_type,
+    maxdimension = maxdimension_type
+  ),
+  validator = function(self) {
+    if (self@engine == "ripserr" && !is.na(self@library)) {
+      "Library is only defined when engine is TDA."
+    }
+  }
+)
+
+
 PH_pointcloud <-  new_class("PH_pointcloud", parent = PH,
                             properties = list(
                               filtration = filtration_type,
-                              engine = engine_type,
-                              library = library_type,
-                              maxdimension = maxdimension_type,
                               maxscale = maxscale_type,
                               params = params_type),
                             validator = function(self) {
                               
-                              
-                              if (self@engine == "ripserr" & !is.na(self@library) ){
-                                sprintf("Library is only defined when engine is TDA. Please leave library blank when using the ripserr engine.")
-                              }
+                            
                               # FIXME: check if additional filtration check is needed
-                              else if (self@engine == "ripserr" & (self@filtration == "alpha_complex" || self@filtration=="alpha_shape")  ){
+                              if (self@engine == "ripserr" && (self@filtration == "alpha_complex" || self@filtration=="alpha_shape")  ){
                                 sprintf("Alpha complexes are only defined for the engine TDA. Please use library TDA for any alpha filtration")
                               }
                               
@@ -105,14 +110,8 @@ PH_pointcloud <-  new_class("PH_pointcloud", parent = PH,
 #TODO: validate params value types?
 PH_raster_class <- new_class("PH_raster", parent = PH,
                        properties = list(
-                         engine = engine_type,
-                         library = library_type,
-                         maxdimension = maxdimension_type,
                          params = params_raster_type),
                        validator = function(self) {
-                         if (self@engine == "ripserr" & !is.na(self@library)) {
-                           sprintf("Library is only defined when engine is TDA. Please leave library blank when using the ripserr engine.")
-                         }
                          if (self@engine == "TDA" && ("threshold" %in% names(self@params))) {
                            sprintf("threshold is only used when engine is ripserr. Please remove threshold from params or set engine = ripserr.")
                          }
@@ -127,6 +126,27 @@ PH_raster_class <- new_class("PH_raster", parent = PH,
                          }
                          if (!is.null(self@params$location) && self@params$location == TRUE && !(all(c("lim","by") %in% names(self@params)))) {
                            sprintf("When location = TRUE, both lim and by must be provided in params.")
+                         }
+                       }
+)
+
+
+PH_graph <-  new_class("PH_graph", parent = PH,
+                       properties = list(
+                         filtration = filtration_type,
+                         params = class_any),
+                       validator = function(self) {
+                         
+                         #the warnings below are for graph object specific errors
+                         if (self@filtration != "vietoris_rips" ){
+                           sprintf("The only filtration avaliable for graph objects is vietoris_rips")
+                         }
+                         else if (self@engine == "ripserr" && !is.na(self@library)){
+                           sprintf("Library is only defined when engine is TDA. Please leave library blank when using the ripserr engine.")
+                         }
+                         # FIXME: check if additional filtration check is needed
+                         else if (self@engine == "ripserr" && (self@filtration == "alpha_complex" || self@filtration=="alpha_shape")  ){
+                           sprintf("Alpha complexes are only defined for the engine TDA. Please use library TDA for any alpha filtration")
                          }
                        }
 )
