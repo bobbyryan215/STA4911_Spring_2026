@@ -144,8 +144,8 @@ PH_raster <- new_class("PH_raster", parent = PH,
 
 
 
-PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, params = list(printProgress = TRUE, p = TRUE))
-PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
+x <- PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, params = list(p = TRUE))
+y <- PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
 
 
 
@@ -153,7 +153,7 @@ PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
 
 #TODO: decide if this is a good way to handle params
 #TODO: add methods for preprocessing strings. 
-PH_raster <- function(engine = "TDA", library = NA_character_, maxdimension = NA_real_, ...) {
+PH_raster_func <- function(engine = "TDA", library = NA_character_, maxdimension = NA_real_, ...) {
   PH_raster_class(
     engine = engine,
     library = library,
@@ -161,3 +161,38 @@ PH_raster <- function(engine = "TDA", library = NA_character_, maxdimension = NA
     params = list(...)
   )
 }
+
+
+
+#TODO: add helper function to handle extra parameters so we can pass them into the persistence functions
+compute_persistence <- new_generic("compute_persistence", "x", function(x, data) {
+  S7_dispatch()
+})
+method(compute_persistence, PH_pointcloud) <- function(x, data) {
+  if (x@engine == "ripserr") {
+    vietoris_rips(data) |> as_persistence()
+  }
+  else if (x@engine == "TDA") {
+    if (x@filtration == "vietoris_rips") {
+      ripsDiag(data, library = x@library) |> as_persistence()
+    }
+    if (x@filtration == "alpha_complex") {
+      alphaComplexDiag(data, library = x@library) |> as_persistence()
+    }
+    if (x@filtration == "alpha_shape") {
+      alphaShapeDiag(data, library = x@library) |> as_persistence() 
+    }
+  }
+}
+method(compute_persistence, PH_raster) <- function(x, data) {
+  if (x@engine == "ripserr") {
+    cubical(data) |> as_persistence()
+  }
+  else if (x@engine == "TDA") {
+    gridDiag(FUNvalues = data, library = x@library) |> as_persistence()
+  }
+}
+
+pc <- matrix(rnorm(30), ncol = 3)
+compute_persistence(x, pc)
+compute_persistence(y, volcano)
