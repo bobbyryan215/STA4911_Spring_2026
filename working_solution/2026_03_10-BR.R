@@ -1,0 +1,128 @@
+library(S7)
+library(TDA)
+library(ripserr)
+library(phutil)
+
+
+
+#TODO: see if not having cubical is correct
+#TODO: see how to handle other objects
+filtration_type <- new_property(
+  class = class_character,
+  validator = function(value) {
+    if (  !(value %in% c("vietoris_rips", "alpha_shape" ,"alpha_complex", "cubical")) )
+      "must be vietoris_rips, cubical, alpha_shape, or alpha_complex"
+  },
+  default = "vietoris_rips"
+)
+
+maxdimension_type <- new_property(
+  class = class_double,
+  validator = function(value) {
+    if (!is.na(value) & value < 0)
+      "must be a non-negative integer"
+  },
+  default = NA_real_
+)
+
+
+engine_type <- new_property(
+  class = class_character,
+  validator = function(value) {
+    if (  !(value %in% c("TDA","ripserr")) )
+      "must be TDA or ripserr"
+  },
+  default ="TDA"
+)
+
+
+library_type <- new_property(
+  class = class_character,
+  validator = function(value) {
+    if (  !(value %in% c("GUDHI", "PHAT", "Dionysus", NA_character_)) )
+      "must be GUDHI, PHAT, or Dionysus or NA_character_"
+  },
+  default = NA_character_
+)
+
+
+
+#FIXME: Do we want a larger parent class. It may be useful to that all subclasses are related. This can easily be removed
+PH <- new_class("PH",
+                properties = list(
+                  filtration = filtration_type,
+                  engine = engine_type,
+                  library = library_type,
+                  maxdimension = maxdimension_type),
+                  validator = function(self) {
+                  if (self@engine == "ripserr" & !is.na(self@library) ){
+                    sprintf("Library is only defined when engine is TDA. Please leave library blank or NA_character_ when using the ripserr engine.")
+                  }
+                  
+                }
+                
+)
+
+
+#TODO: change to max_diameter
+#TODO: change to max_radius
+maxscale_type <- new_property(
+  class = class_double,
+  validator = function(value) {
+    if (  (!is.na(value) & value <= 0 ))
+      "must be a positive real number"
+  },
+  default = NA_real_
+)
+
+PH_pointcloud <-  new_class("PH_pointcloud", parent = PH,
+                            properties = list(maxscale = maxscale_type),
+                          validator = function(self) {
+                         # FIXME: check if additional filtration check is needed
+                          if (self@engine == "ripserr" & (self@filtration == "alpha_complex" || self@filtration=="alpha_shape")  ){
+                           sprintf("Alpha complexes are only defined for the engine TDA using point clouds. Please use library TDA for any alpha filtration")
+                          }
+            }
+)
+
+
+PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5)
+
+
+
+
+
+#TODO: add helper function to handle extra parameters so we can pass them into the persistence functions
+compute_persistence <- new_generic("compute_persistence", "x", function(x, data) {
+  S7_dispatch()
+})
+method(compute_persistence, PH_pointcloud) <- function(x, data) {
+  if (x@engine == "ripserr") {
+    vietoris_rips(data) |> as_persistence()
+  }
+  else if (x@engine == "TDA") {
+    if (x@filtration == "vietoris_rips") {
+      ripsDiag(data, library = x@library) |> as_persistence()
+    }
+    if (x@filtration == "alpha_complex") {
+      alphaComplexDiag(data, library = x@library) |> as_persistence()
+    }
+    if (x@filtration == "alpha_shape") {
+      alphaShapeDiag(data, library = x@library) |> as_persistence() 
+    }
+  }
+}
+method(compute_persistence, PH_raster) <- function(x, data) {
+  if (x@engine == "ripserr") {
+    cubical(data) |> as_persistence()
+  }
+  else if (x@engine == "TDA") {
+    gridDiag(FUNvalues = data, library = x@library) |> as_persistence()
+  }
+}
+
+
+#success!
+filtration <- PH_pointcloud_function(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, method = TRUE, p = TRUE)
+compute_persistence(filtration,  matrix(rnorm(30), ncol = 3))
+
