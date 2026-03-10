@@ -173,5 +173,31 @@ PH_pointcloud_function(engine = "ripserr", filtration = "vietoris_rips", maxdime
 
 
 
-
-
+#TODO: add helper function to handle extra parameters so we can pass them into the persistence functions
+compute_persistence <- new_generic("compute_persistence", "x", function(x, data) {
+  S7_dispatch()
+})
+method(compute_persistence, PH_pointcloud) <- function(x, data) {
+  if (x@engine == "ripserr") {
+    vietoris_rips(data) |> as_persistence()
+  }
+  else if (x@engine == "TDA") {
+    if (x@filtration == "vietoris_rips") {
+      ripsDiag(data, library = x@library) |> as_persistence()
+    }
+    if (x@filtration == "alpha_complex") {
+      alphaComplexDiag(data, library = x@library) |> as_persistence()
+    }
+    if (x@filtration == "alpha_shape") {
+      alphaShapeDiag(data, library = x@library) |> as_persistence() 
+    }
+  }
+}
+method(compute_persistence, PH_raster) <- function(x, data) {
+  if (x@engine == "ripserr") {
+    cubical(data) |> as_persistence()
+  }
+  else if (x@engine == "TDA") {
+    gridDiag(FUNvalues = data, library = x@library) |> as_persistence()
+  }
+}
