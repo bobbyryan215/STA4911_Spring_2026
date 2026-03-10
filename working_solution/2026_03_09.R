@@ -61,7 +61,7 @@ PH <- new_class("PH",
                   library = library_type,
                   maxdimension = maxdimension_type,
                   maxscale = maxscale_type),
-                  validator = function(self) {
+                validator = function(self) {
                   if (self@engine == "ripserr" & !is.na(self@library) ){
                     sprintf("Library is only defined when engine is TDA. Please leave library blank or NA_character_ when using the ripserr engine.")
                   }
@@ -78,7 +78,7 @@ PH <- new_class("PH",
 params_point_cloud_type <- new_property(
   class = class_list,
   validator = function(value) {
-      #TODO: Should sample_lab and dim_lag be in here and dist
+    #TODO: Should sample_lab and dim_lag be in here and dist
     if (  !all(names(value) %in% c("dist","location","printProgress","method","p")  ))
       "only acceptable paramaters are dist, location, printProgress, p, and method"
   },
@@ -97,21 +97,21 @@ params_raster_type <- new_property(
 
 
 PH_pointcloud <-  new_class("PH_pointcloud", parent = PH,
-                       properties = list(
-                         params = params_point_cloud_type),
-                          validator = function(self) {
-                         # FIXME: check if additional filtration check is needed
-                          if (self@engine == "ripserr" & (self@filtration == "alpha_complex" || self@filtration=="alpha_shape")  ){
-                           sprintf("Alpha complexes are only defined for the engine TDA using point clouds. Please use library TDA for any alpha filtration")
-                          }
-                          else if (self@engine == "ripserr" &  !all(names(self@params) %in% c("method","p"))){
-                                   sprintf("Only acceptable params when engine is ripserr are method, and p")
-                          }
-                      
-                       else if (self@engine == "TDA" &  !all(names(self@params) %in% c("dist","location","printProgress"))){
+                            properties = list(
+                              params = params_point_cloud_type),
+                            validator = function(self) {
+                              # FIXME: check if additional filtration check is needed
+                              if (self@engine == "ripserr" & (self@filtration == "alpha_complex" || self@filtration=="alpha_shape")  ){
+                                sprintf("Alpha complexes are only defined for the engine TDA using point clouds. Please use library TDA for any alpha filtration")
+                              }
+                              else if (self@engine == "ripserr" &  !all(names(self@params) %in% c("method","p"))){
+                                sprintf("Only acceptable params when engine is ripserr are method, and p")
+                              }
+                              
+                              else if (self@engine == "TDA" &  !all(names(self@params) %in% c("dist","location","printProgress"))){
                                 sprintf("Only acceptable params when engine is TDA are dist, location, and printProgress")
-                          }
-                       }
+                              }
+                            }
 )
 
 #TODO: I did not modify PH_raster from last time.
@@ -144,13 +144,8 @@ PH_raster <- new_class("PH_raster", parent = PH,
 
 
 
-<<<<<<< HEAD
-x <- PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, params = list(p = TRUE))
-y <- PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
-=======
 PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, params = list(method = TRUE, p = TRUE))
 PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
->>>>>>> 21505cf750eb200af52d286f9460a11163b05987
 
 
 
@@ -158,15 +153,10 @@ PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
 
 #TODO: decide if this is a good way to handle params
 #TODO: add methods for preprocessing strings. 
-<<<<<<< HEAD
-PH_raster_func <- function(engine = "TDA", library = NA_character_, maxdimension = NA_real_, ...) {
-  PH_raster_class(
-=======
 PH_pointcloud_function <- function(engine = "TDA", library = NA_character_, maxdimension = NA_real_, maxscale = NA_real_, 
                                    filtration = "vietoris_rips", ...) {
   #we can add parameter preprocessing here
   PH_pointcloud(
->>>>>>> 21505cf750eb200af52d286f9460a11163b05987
     engine = engine,
     library = library,
     maxdimension = maxdimension,
@@ -178,14 +168,11 @@ PH_pointcloud_function <- function(engine = "TDA", library = NA_character_, maxd
 
 
 
-<<<<<<< HEAD
-=======
 #it works and better syntax for user
 PH_pointcloud_function(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, method = TRUE, p = TRUE)
 
 
 
->>>>>>> 21505cf750eb200af52d286f9460a11163b05987
 #TODO: add helper function to handle extra parameters so we can pass them into the persistence functions
 compute_persistence <- new_generic("compute_persistence", "x", function(x, data) {
   S7_dispatch()
@@ -214,10 +201,3 @@ method(compute_persistence, PH_raster) <- function(x, data) {
     gridDiag(FUNvalues = data, library = x@library) |> as_persistence()
   }
 }
-<<<<<<< HEAD
-
-pc <- matrix(rnorm(30), ncol = 3)
-compute_persistence(x, pc)
-compute_persistence(y, volcano)
-=======
->>>>>>> 21505cf750eb200af52d286f9460a11163b05987
