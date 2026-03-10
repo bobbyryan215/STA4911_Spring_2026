@@ -144,7 +144,7 @@ PH_raster <- new_class("PH_raster", parent = PH,
 
 
 
-PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, params = list(printProgress = TRUE, p = TRUE))
+PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, params = list(method = TRUE, p = TRUE))
 PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
 
 
@@ -153,11 +153,25 @@ PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
 
 #TODO: decide if this is a good way to handle params
 #TODO: add methods for preprocessing strings. 
-PH_raster <- function(engine = "TDA", library = NA_character_, maxdimension = NA_real_, ...) {
-  PH_raster_class(
+PH_pointcloud_function <- function(engine = "TDA", library = NA_character_, maxdimension = NA_real_, maxscale = NA_real_, 
+                                   filtration = "vietoris_rips", ...) {
+  #we can add parameter preprocessing here
+  PH_pointcloud(
     engine = engine,
     library = library,
     maxdimension = maxdimension,
+    maxscale = maxscale, 
+    filtration = filtration,
     params = list(...)
   )
 }
+
+
+
+#it works and better syntax for user
+PH_pointcloud_function(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, method = TRUE, p = TRUE)
+
+
+
+
+
