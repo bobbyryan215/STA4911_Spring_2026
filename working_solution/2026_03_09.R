@@ -144,8 +144,13 @@ PH_raster <- new_class("PH_raster", parent = PH,
 
 
 
+<<<<<<< HEAD
 x <- PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, params = list(p = TRUE))
 y <- PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
+=======
+PH_pointcloud(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, params = list(method = TRUE, p = TRUE))
+PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE))
+>>>>>>> 21505cf750eb200af52d286f9460a11163b05987
 
 
 
@@ -153,17 +158,34 @@ y <- PH_raster(engine = "TDA", library = "GUDHI", params = list(sublevel = FALSE
 
 #TODO: decide if this is a good way to handle params
 #TODO: add methods for preprocessing strings. 
+<<<<<<< HEAD
 PH_raster_func <- function(engine = "TDA", library = NA_character_, maxdimension = NA_real_, ...) {
   PH_raster_class(
+=======
+PH_pointcloud_function <- function(engine = "TDA", library = NA_character_, maxdimension = NA_real_, maxscale = NA_real_, 
+                                   filtration = "vietoris_rips", ...) {
+  #we can add parameter preprocessing here
+  PH_pointcloud(
+>>>>>>> 21505cf750eb200af52d286f9460a11163b05987
     engine = engine,
     library = library,
     maxdimension = maxdimension,
+    maxscale = maxscale, 
+    filtration = filtration,
     params = list(...)
   )
 }
 
 
 
+<<<<<<< HEAD
+=======
+#it works and better syntax for user
+PH_pointcloud_function(engine = "ripserr", filtration = "vietoris_rips", maxdimension = 5, method = TRUE, p = TRUE)
+
+
+
+>>>>>>> 21505cf750eb200af52d286f9460a11163b05987
 #TODO: add helper function to handle extra parameters so we can pass them into the persistence functions
 compute_persistence <- new_generic("compute_persistence", "x", function(x, data) {
   S7_dispatch()
@@ -192,7 +214,10 @@ method(compute_persistence, PH_raster) <- function(x, data) {
     gridDiag(FUNvalues = data, library = x@library) |> as_persistence()
   }
 }
+<<<<<<< HEAD
 
 pc <- matrix(rnorm(30), ncol = 3)
 compute_persistence(x, pc)
 compute_persistence(y, volcano)
+=======
+>>>>>>> 21505cf750eb200af52d286f9460a11163b05987
