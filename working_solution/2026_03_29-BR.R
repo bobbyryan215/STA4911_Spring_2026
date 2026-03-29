@@ -154,7 +154,7 @@ method(compute_persistence, list(PH_pointcloud, matrix_class)) <- function(obj, 
 
 method(compute_persistence, list(PH_pointcloud, dist_class)) <- function(obj, data) {
   if (obj@engine == "ripserr") {
-    res <-  vietoris_rips(
+   res <-  vietoris_rips(
       data,
       max_dim = obj@max_dimension,
       threshold = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
@@ -211,3 +211,221 @@ method(compute_persistence, list(PH_raster, array_class)) <- function(obj, data)
   }
   res
 }
+
+
+
+
+
+#vietoris_rips- tda - dist
+#Dispatch- does not work- returns NULL
+#Internal code- does not work- returns NULL
+#Function call- works
+#Internal code assigned within- works
+
+
+x <- PH_pointcloud(
+  engine = "TDA", library = "GUDHI", filtration = "vietoris_rips",
+  max_diameter = 1000
+)
+# example using double-dispatch S7 method
+# `method(compute_persistence, list(PH_pointcloud, dist_class))`
+# works
+data <- eurodist
+res <- compute_persistence(x, eurodist)
+res
+
+obj <- x
+# returns meaningful answer
+res <- ripsDiag(
+  data,
+  library = obj@library,
+  maxdimension = obj@max_dimension,
+  dist = "arbitrary",
+  maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+) |> as_persistence()
+res
+res |> as.data.frame()
+
+
+
+
+
+
+
+
+
+#vietoris_rips- risperr - dist
+#Dispatch- works
+#Internal code- works
+#Function call- works
+#Internal code assigned within- works
+x <- PH_pointcloud(
+  engine = "ripserr", filtration = "vietoris_rips",
+  max_diameter = 1000
+)
+# example using double-dispatch S7 method
+# `method(compute_persistence, list(PH_pointcloud, matrix))`
+# returns menaingful output
+data <- eurodist
+res <- compute_persistence(x, data)
+res
+
+obj <- x
+# returns meaningful answer
+res <- vietoris_rips(
+  data,
+  max_dim = obj@max_dimension,
+  threshold = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+) |> as_persistence()
+res
+res |> as.data.frame()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#alpha_shape- TDA
+#Dispatch- does not work
+#Internal code- works but does not respect max dimension argument
+#Function call- works but does not respect max dimension argument
+#Internal code assigned within- works but does not respect max dimension argument 
+
+x <- PH_pointcloud(
+  engine = "TDA", library = "GUDHI", filtration = "alpha_shape",
+  max_diameter = 1000
+)
+# example using double-dispatch S7 method
+# `method(compute_persistence, list(PH_pointcloud, matrix))`
+# returns Error: Can't find method for generic `compute_persistence(obj, data)`:
+data <- matrix(rnorm(100), ncol = 4)
+res <- compute_persistence(x, data)
+res
+obj <- x
+
+# returns meaningful answer
+res <- alphaShapeDiag(
+  data,
+  library = obj@library,
+  maxdimension = obj@max_dimension,
+) |> as_persistence()
+res
+res |> as.data.frame()
+
+
+
+
+#alpha_complex TDA
+#Dispatch- does not work- returns Error: Can't find method for generic `compute_persistence(obj, data)`
+#Internal Code- does not work-returns NULL
+#Function Call- works but does not respect max dimension argument- Sometimes crashes R!??
+#Internal code assigned within- works but does not respect max dimension argument 
+
+x <- PH_pointcloud(
+  engine = "TDA", library = "GUDHI", filtration = "alpha_complex",
+  max_diameter = 1000
+)
+# example using double-dispatch S7 method
+# `method(compute_persistence, list(PH_pointcloud, matrix))`
+# returns Error: Can't find method for generic `compute_persistence(obj, data)`:
+
+data <- matrix(rnorm(30), ncol = 3)
+res <- compute_persistence(x, data)
+res
+obj <- x
+
+
+# returns meaningful answer
+res <- alphaComplexDiag(
+  data,
+  library = obj@library,
+  maxdimension = obj@max_dimension,
+) |> as_persistence()
+res
+res |> as.data.frame()
+
+
+
+
+
+
+
+
+
+#vietoris_rips tda coordinate matrices
+#Dispatch- does not work- returns Error: Can't find method for generic `compute_persistence(obj, data)`
+#Internal Code- does not work- returns NULL
+#Function Call- works
+#Internal code assigned within- works
+
+x <- PH_pointcloud(
+  engine = "TDA", filtration = "vietoris_rips", library= "GUDHI",
+  max_diameter = 1000, max_dimension = 2
+)
+# example using double-dispatch S7 method
+# `method(compute_persistence, list(PH_pointcloud, matrix))`
+# returns Error: Can't find method for generic `compute_persistence(obj, data)`:
+data <- matrix(rnorm(100), ncol = 4)
+res <- compute_persistence(x, data)
+
+res
+
+obj <- x
+# returns meaningful answer
+res <- ripsDiag(
+  data,
+  library = obj@library,
+  maxdimension = obj@max_dimension,
+  maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+) |> as_persistence()
+
+res
+res |> as.data.frame()
+
+
+
+
+
+
+
+
+
+#vietoris_rips ripserr
+#Dispatch- does not work- returns Error: Can't find method for generic `compute_persistence(obj, data)`
+#Internal Code- meaningful result
+#Function Call- meaningful result
+#Internal code assigned within- works
+
+x <- PH_pointcloud(
+  engine = "ripserr", filtration = "vietoris_rips",
+  max_diameter = 1000, max_dimension = 2
+)
+# example using double-dispatch S7 method
+# `method(compute_persistence, list(PH_pointcloud, matrix))`
+# returns Error: Can't find method for generic `compute_persistence(obj, data)`:
+data <- matrix(rnorm(100), ncol = 4)
+res <- compute_persistence(x, data)
+
+res
+
+
+obj <- x
+# returns meaningful answer
+res <- vietoris_rips(
+  data,
+  max_dim = obj@max_dimension,
+  threshold = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+) |> as_persistence()
+
+
+res
+res |> as.data.frame()
+
