@@ -115,42 +115,6 @@ array_class <- new_S3_class("array")
 
 #TODO: add helper function to handle extra parameters so we can pass them into the persistence functions
 compute_persistence <- new_generic("compute_persistence", c("obj","data"))
-method(compute_persistence, list(PH_pointcloud, matrix_class)) <- function(obj, data) {
-  if (obj@engine == "ripserr") {
-    res <- vietoris_rips(
-      data,
-      max_dim = obj@max_dimension,
-      threshold = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
-    ) |> as_persistence()
-  }
-  else if (obj@engine == "TDA") {
-    if (obj@filtration == "vietoris_rips") {
-      res <- ripsDiag(
-        data,
-        library = obj@library,
-        maxdimension = obj@max_dimension,
-        maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
-      ) |> as_persistence()
-    }
-    if (obj@filtration == "alpha_complex") {
-      res<- alphaComplexDiag(
-        data,
-        library = obj@library,
-        maxdimension = obj@max_dimension,
-        maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
-      ) |> as_persistence()
-    }
-    if (obj@filtration == "alpha_shape") {
-      res <- alphaShapeDiag(
-        data,
-        library = obj@library,
-        maxdimension = obj@max_dimension,
-        maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
-      ) |> as_persistence() 
-    }
-  }
-  res
-}
 
 method(compute_persistence, list(PH_pointcloud, dist_class)) <- function(obj, data) {
   if (obj@engine == "ripserr") {
@@ -174,40 +138,58 @@ method(compute_persistence, list(PH_pointcloud, dist_class)) <- function(obj, da
       res<- alphaComplexDiag(
         data,
         library = obj@library,
-        maxdimension = obj@max_dimension,
-        maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+        maxdimension = obj@max_dimension
       ) |> as_persistence()
     }
     if (obj@filtration == "alpha_shape") {
       res<-alphaShapeDiag(
         data,
         library = obj@library,
-        maxdimension = obj@max_dimension,
-        #FIXME: Bobby- we should remove to fix this
-        #maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+        maxdimension = obj@max_dimension
       ) |> as_persistence() 
     }
   }
   res
 }
-method(compute_persistence, list(PH_raster, matrix_class)) <- function(obj, data) {
-  data <- as.array(data)
-  compute_persistence(obj, data)
-}
-method(compute_persistence, list(PH_raster, array_class)) <- function(obj, data) {
-  if (obj@engine == "ripserr") {
-    res<-cubical(
-      data,
-      threshold = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
-    ) |> as_persistence()
+
+
+#TODO: Find better way to set maxcale in TDA
+method(compute_persistence, list(PH_pointcloud, class_double)) <- function(obj, data) {
+  if (is.matrix(data) | is.matrix(data)) {
+    if (obj@engine == "ripserr") {
+      res <- vietoris_rips(
+        data,
+        max_dim = obj@max_dimension,
+        threshold = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+      ) |> as_persistence()
+    }
+    else if (obj@engine == "TDA") {
+      if (obj@filtration == "vietoris_rips") {
+        res <- ripsDiag(
+          data,
+          library = obj@library,
+          maxdimension = obj@max_dimension,
+          maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+        ) |> as_persistence()
+      }
+      if (obj@filtration == "alpha_complex") {
+        res<- alphaComplexDiag(
+          data,
+          library = obj@library,
+          maxdimension = obj@max_dimension
+        ) |> as_persistence()
+      }
+      if (obj@filtration == "alpha_shape") {
+        res <- alphaShapeDiag(
+          data,
+          library = obj@library,
+          maxdimension = obj@max_dimension
+        ) |> as_persistence() 
+      }
+    }
+    res
   }
-  else if (obj@engine == "TDA") {
-    res<-gridDiag(
-      FUNvalues = data,
-      library = obj@library,
-      sublevel = obj@sublevel,
-      maxdimension = obj@max_dimension
-    ) |> as_persistence()
+  else {
+    return("Data must be a matrix or an array for PH_pointcloud")
   }
-  res
 }
