@@ -216,3 +216,23 @@ method(compute_persistence, list(PH_raster, class_double)) <- function(obj, data
     return("Data must be a matrix or an array for PH_pointcloud")
   }
 }
+
+# cubical TDA
+# Dispatch- works
+# Function Call- meaningful result  
+x <- PH_raster(filtration = "cubical", 
+               engine = "TDA", 
+               library = "GUDHI",)
+res <- compute_persistence(x, volcano)
+res |> as.data.frame()
+
+
+# cubical ripserr
+# Dispatch- works
+# Function Call- meaningful result, must specify max_diameter as expected 
+x <- PH_raster(filtration = "cubical", 
+               engine = "ripserr", 
+               max_diameter = 1000)
+res <- compute_persistence(x, volcano)
+res |> as.data.frame()
+
