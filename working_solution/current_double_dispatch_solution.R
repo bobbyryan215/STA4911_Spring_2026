@@ -17,11 +17,12 @@ filtration_type <- new_property(
 
 # change `maxdimension` to `max_dimension` or `max_dim`
 # NOTE: currently we vascillate among `max_hom_degree`, `max_dim`, etc.
-# stopifnot(5.5 %% 1 == 0)
 maxdimension_type <- new_property(
   class = class_double,
   validator = function(value) {
     if (!is.na(value) & value < 0)
+      "must be a non-negative integer"
+    if (value %% 1 == 0)
       "must be a non-negative integer"
   },
   default = 1
@@ -57,8 +58,6 @@ library_type <- new_property(
 
 # is there a syntactic/case standard for S7 classes (`PH_<type>`) and methods
 # (`compute_persistence`) that we should adopt (e.g. snake case, camel case)?
-
-#FIXME: Do we want a larger parent class. It may be useful to that all subclasses are related. This can easily be removed
 PH <- new_class("PH",
                 properties = list(
                   filtration = filtration_type,
