@@ -135,7 +135,12 @@ PH_raster <- new_class(
   properties = list(
     max_diameter = maxdiameter_type,
     sublevel = sublevel_type
-  )
+  ),
+  validator = function(self) {
+    if (self@filtration != "cubical") {
+      sprintf("Only cubical filtrations are allowed for raster objects")
+    }
+  }
 )
 
 # search existing S7-dependent packages for standard names of these classes
@@ -173,7 +178,7 @@ method(compute_persistence, list(PH_pointcloud, dist_class)) <- function(obj, da
     if (obj@filtration == "vietoris_rips") {
       res<- ripsDiag(
         data,
-        library = obj@library,
+        library = ifelse(is.na(obj@library), "GUDHI", obj@library),
         maxdimension = obj@max_dimension,
         dist = "arbitrary",
         maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
@@ -182,14 +187,14 @@ method(compute_persistence, list(PH_pointcloud, dist_class)) <- function(obj, da
     if (obj@filtration == "alpha_complex") {
       res<- alphaComplexDiag(
         data,
-        library = obj@library,
+        library = ifelse(is.na(obj@library), c("GUDHI", "Dionysus"), obj@library),
         maxdimension = obj@max_dimension
       ) |> as_persistence()
     }
     if (obj@filtration == "alpha_shape") {
       res<-alphaShapeDiag(
         data,
-        library = obj@library,
+        library = ifelse(is.na(obj@library), c("GUDHI", "Dionysus"), obj@library),
         maxdimension = obj@max_dimension
       ) |> as_persistence() 
     }
@@ -213,7 +218,7 @@ method(compute_persistence, list(PH_pointcloud, class_double)) <- function(obj, 
       if (obj@filtration == "vietoris_rips") {
         res <- ripsDiag(
           data,
-          library = obj@library,
+          library = ifelse(is.na(obj@library), "GUDHI", obj@library),
           maxdimension = obj@max_dimension,
           maxscale = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
         ) |> as_persistence()
@@ -221,14 +226,14 @@ method(compute_persistence, list(PH_pointcloud, class_double)) <- function(obj, 
       if (obj@filtration == "alpha_complex") {
         res<- alphaComplexDiag(
           data,
-          library = obj@library,
+          library = ifelse(is.na(obj@library), c("GUDHI", "Dionysus"), obj@library),
           maxdimension = obj@max_dimension
         ) |> as_persistence()
       }
       if (obj@filtration == "alpha_shape") {
         res <- alphaShapeDiag(
           data,
-          library = obj@library,
+          library = ifelse(is.na(obj@library), c("GUDHI", "Dionysus"), obj@library),
           maxdimension = obj@max_dimension
         ) |> as_persistence() 
       }
@@ -253,7 +258,7 @@ method(compute_persistence, list(PH_raster, class_double)) <- function(obj, data
     else if (obj@engine == "TDA") {
       res <- gridDiag(
         FUNvalues = data,
-        library = obj@library,
+        library = ifelse(is.na(obj@library), "GUDHI", obj@library),
         sublevel = obj@sublevel,
         maxdimension = obj@max_dimension
       ) |> as_persistence()
