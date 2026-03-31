@@ -3,6 +3,9 @@ library(TDA)
 library(ripserr)
 library(phutil)
 
+# allow different spacing, capitalization, etc
+# e.g. allow `<S7_obj>(filtration = "Alpha shape")`
+# maybe use `tolower()`, `snakecase::to_snake_case()`, etc.
 filtration_type <- new_property(
   class = class_character,
   validator = function(value) {
@@ -12,6 +15,9 @@ filtration_type <- new_property(
   default = "vietoris_rips"
 )
 
+# change `maxdimension` to `max_dimension` or `max_dim`
+# NOTE: currently we vascillate among `max_hom_degree`, `max_dim`, etc.
+# stopifnot(5.5 %% 1 == 0)
 maxdimension_type <- new_property(
   class = class_double,
   validator = function(value) {
@@ -21,7 +27,7 @@ maxdimension_type <- new_property(
   default = 1
 )
 
-
+# recommend requiring exact package name (including capitalization)
 engine_type <- new_property(
   class = class_character,
   validator = function(value) {
@@ -31,7 +37,10 @@ engine_type <- new_property(
   default ="TDA"
 )
 
-
+# needs to behave differently according to `engine`
+# all expected errors should be informative
+# when `engine = "TDA"`, need to be able to choose appropriate default
+# (depending on `filtration` too) - or make this happen during dispatch!
 library_type <- new_property(
   class = class_character,
   validator = function(value) {
@@ -42,6 +51,12 @@ library_type <- new_property(
 )
 
 
+# when `FIXME` tag is resolved, drop it. : )
+# if a library is *always* incompatible with a filtration,
+# then write a conditional for that situation here
+
+# is there a syntactic/case standard for S7 classes (`PH_<type>`) and methods
+# (`compute_persistence`) that we should adopt (e.g. snake case, camel case)?
 
 #FIXME: Do we want a larger parent class. It may be useful to that all subclasses are related. This can easily be removed
 PH <- new_class("PH",
@@ -60,6 +75,10 @@ PH <- new_class("PH",
 )
 
 
+# write/find a standalone script that illustrates the problem with having
+# diameter and radius fill in each other; flag for later experimenting
+
+# change `maxdiameter` and `maxradius` to have underscores
 
 #read only property
 #best solution I could find
@@ -75,7 +94,13 @@ maxradius_type = new_property(
   }
 )
 
+# implement two ways of passing engine-specific arguments:
+# 1. `params = list(...)` argument to `PH_pointcloud()`
+# 2. `compute_persistence(<spec>, <data>, ...)`
 
+# what other point cloud-specific properties might be needed?
+# * distance metric
+# restrict to point cloud filtrations (i.e. not "cubical")
 
 PH_pointcloud <-  new_class("PH_pointcloud", parent = PH,
                             properties = list(max_radius= maxradius_type,
@@ -98,6 +123,10 @@ sublevel_type <- new_property(
   default = TRUE
 )
 
+# require `filtration` argument to `PH_raster()`
+# raise issue to distinguish between different filtrations of raster data
+# restrict to raster filtrations (only "cubical" for now)
+
 # raster subclass (includes object specific parameters)
 # TODO: should sublevel be included here or in method
 PH_raster <- new_class(
@@ -109,12 +138,28 @@ PH_raster <- new_class(
   )
 )
 
+# search existing S7-dependent packages for standard names of these classes
+# otherwise extrapolate from e.g. `class_double`
+
 matrix_class <- new_S3_class("matrix")
 dist_class <- new_S3_class("dist")
 array_class <- new_S3_class("array")
 
 #TODO: add helper function to handle extra parameters so we can pass them into the persistence functions
+# (engine-specific params)
+# consider alternative names than `compute_persistence()`,
+# ideally commonly used elsewhere:
+# * `fit()` as used in {parsnip} (not good for this, probably)
+# * `test()` (also wrong)
+# * `predict()` (also wrong)
+# probably use `object` rather than `obj`
+# (or maybe another name if you find one)
+
 compute_persistence <- new_generic("compute_persistence", c("obj","data"))
+
+# is a helper function appropriate for the conditionals? (maybe not)
+# factor out `as_persistence()` from the conditionals
+# maybe then factor out `res <-`?
 
 method(compute_persistence, list(PH_pointcloud, dist_class)) <- function(obj, data) {
   if (obj@engine == "ripserr") {
@@ -152,6 +197,7 @@ method(compute_persistence, list(PH_pointcloud, dist_class)) <- function(obj, da
   res
 }
 
+# suggest computing enclosing radius/diameter when `maxscale` is not passed
 
 #TODO: Find better way to set maxcale in TDA
 method(compute_persistence, list(PH_pointcloud, class_double)) <- function(obj, data) {
@@ -194,6 +240,8 @@ method(compute_persistence, list(PH_pointcloud, class_double)) <- function(obj, 
   }
 }
 
+# raise issue on package repo to resolve this when possible
+
 method(compute_persistence, list(PH_raster, class_double)) <- function(obj, data) {
   if (is.matrix(data) | is.array(data)) {
     if (obj@engine == "ripserr") {
@@ -226,6 +274,9 @@ x <- PH_raster(filtration = "cubical",
 res <- compute_persistence(x, volcano)
 res |> as.data.frame()
 
+# allow user to not pass `max_diameter` with "ripserr" engine
+# revisit `max_diameter`/`max_radius` property to make it meaningful for all
+# filtration parameters? or else introduce alternative `max_value` property?
 
 # cubical ripserr
 # Dispatch- works
