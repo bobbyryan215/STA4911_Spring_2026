@@ -155,7 +155,7 @@ method(compute_persistence, list(PH_pointcloud, dist_class)) <- function(obj, da
 
 #TODO: Find better way to set maxcale in TDA
 method(compute_persistence, list(PH_pointcloud, class_double)) <- function(obj, data) {
-  if (is.matrix(data) | is.matrix(data)) {
+  if (is.matrix(data) | is.array(data)) {
     if (obj@engine == "ripserr") {
       res <- vietoris_rips(
         data,
@@ -186,6 +186,29 @@ method(compute_persistence, list(PH_pointcloud, class_double)) <- function(obj, 
           maxdimension = obj@max_dimension
         ) |> as_persistence() 
       }
+    }
+    res
+  }
+  else {
+    return("Data must be a matrix or an array for PH_pointcloud")
+  }
+}
+
+method(compute_persistence, list(PH_raster, class_double)) <- function(obj, data) {
+  if (is.matrix(data) | is.array(data)) {
+    if (obj@engine == "ripserr") {
+      res <- cubical(
+        data,
+        threshold = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+      ) |> as_persistence()
+    }
+    else if (obj@engine == "TDA") {
+      res <- gridDiag(
+        FUNvalues = data,
+        library = obj@library,
+        sublevel = obj@sublevel,
+        maxdimension = obj@max_dimension
+      ) |> as_persistence()
     }
     res
   }
