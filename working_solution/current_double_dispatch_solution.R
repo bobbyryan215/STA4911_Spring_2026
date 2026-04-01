@@ -17,12 +17,12 @@ filtration_type <- new_property(
 
 # change `maxdimension` to `max_dimension` or `max_dim`
 # NOTE: currently we vascillate among `max_hom_degree`, `max_dim`, etc.
-maxdimension_type <- new_property(
+max_dimension_type <- new_property(
   class = class_double,
   validator = function(value) {
     if (!is.na(value) & value < 0)
       "must be a non-negative integer"
-    if (value %% 1 == 0)
+    if (value %% 1 != 0)
       "must be a non-negative integer"
   },
   default = 1
@@ -63,7 +63,7 @@ PH <- new_class("PH",
                   filtration = filtration_type,
                   engine = engine_type,
                   library = library_type,
-                  max_dimension = maxdimension_type),
+                  max_dimension = max_dimension_type),
                 validator = function(self) {
                   if (self@engine == "ripserr" & !is.na(self@library) ){
                     sprintf("Library is only defined when engine is TDA. Please leave library blank or NA_character_ when using the ripserr engine.")
@@ -81,12 +81,12 @@ PH <- new_class("PH",
 
 #read only property
 #best solution I could find
-maxdiameter_type = new_property(
+max_diameter_type = new_property(
   class = class_double,
   default = NA_real_)
 
 
-maxradius_type = new_property(
+max_radius_type = new_property(
   class = class_double,
   getter = function(self) {
     self@max_diameter/2
@@ -102,8 +102,8 @@ maxradius_type = new_property(
 # restrict to point cloud filtrations (i.e. not "cubical")
 
 PH_pointcloud <-  new_class("PH_pointcloud", parent = PH,
-                            properties = list(max_radius= maxradius_type,
-                                              max_diameter= maxdiameter_type),
+                            properties = list(max_radius= max_radius_type,
+                                              max_diameter= max_diameter_type),
                             validator = function(self) {
                               # FIXME: check if additional filtration check is needed
                               if (self@engine == "ripserr" & (self@filtration == "alpha_complex" || self@filtration=="alpha_shape")  ){
@@ -122,6 +122,11 @@ sublevel_type <- new_property(
   default = TRUE
 )
 
+max_scale_type = new_property(
+  class = class_double,
+  default = NA_real_)
+
+
 # require `filtration` argument to `PH_raster()`
 # raise issue to distinguish between different filtrations of raster data
 # restrict to raster filtrations (only "cubical" for now)
@@ -132,7 +137,7 @@ PH_raster <- new_class(
   "PH_raster", 
   parent = PH,
   properties = list(
-    max_diameter = maxdiameter_type,
+    max_scale = max_scale_type,
     sublevel = sublevel_type
   ),
   validator = function(self) {
@@ -251,7 +256,7 @@ method(compute_persistence, list(PH_raster, class_double)) <- function(obj, data
     if (obj@engine == "ripserr") {
       res <- cubical(
         data,
-        threshold = ifelse(is.na(obj@max_diameter), 0, obj@max_diameter)
+        threshold = ifelse(is.na(obj@max_scale), 0, obj@max_scale)
       ) |> as_persistence()
     }
     else if (obj@engine == "TDA") {
@@ -274,7 +279,7 @@ method(compute_persistence, list(PH_raster, class_double)) <- function(obj, data
 # Function Call- meaningful result  
 x <- PH_raster(filtration = "cubical", 
                engine = "TDA", 
-               library = "GUDHI",)
+               library = "GUDHI")
 res <- compute_persistence(x, volcano)
 res |> as.data.frame()
 
@@ -287,7 +292,7 @@ res |> as.data.frame()
 # Function Call- meaningful result, must specify max_diameter as expected 
 x <- PH_raster(filtration = "cubical", 
                engine = "ripserr", 
-               max_diameter = 1000)
+               max_scale = 1000)
 res <- compute_persistence(x, volcano)
 res |> as.data.frame()
 
