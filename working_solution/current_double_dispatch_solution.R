@@ -2,6 +2,8 @@ library(S7)
 library(TDA)
 library(ripserr)
 library(phutil)
+library(snakecase)
+library(stringr)
 
 # allow different spacing, capitalization, etc
 # e.g. allow `<S7_obj>(filtration = "Alpha shape")`
@@ -9,7 +11,9 @@ library(phutil)
 filtration_type <- new_property(
   class = class_character,
   validator = function(value) {
-    if (  !(value %in% c("vietoris_rips", "alpha_shape" ,"alpha_complex", "cubical")) )
+    valid_filtrations <- c("vietoris_rips", "cubical", "alpha_shape", "alpha_complex")
+    val <- to_snake_case(value)
+    if (!(TRUE %in% str_detect(valid_filtrations, val)))
       "must be vietoris_rips, cubical, alpha_shape, or alpha_complex"
   },
   default = "vietoris_rips"
